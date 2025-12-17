@@ -38,7 +38,7 @@ class PaymentService {
     required String description,
   }) {
     var options = {
-      'key': 'rzp_test_Rl4olkYBmywLas', // Replace with your key
+      'key': 'rzp_live_RsaiWq2QOUCPwS', // Replace with your key
       'amount': (amount * 100).toInt(), // Amount in paise
       'name': 'TaskMaster Pro',
       'description': description,

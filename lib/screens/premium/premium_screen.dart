@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import 'package:taskmaster_pro/providers/auth_provider.dart';
 import 'package:taskmaster_pro/providers/subscription_provider.dart';
-
 
 class PremiumScreen extends StatelessWidget {
   const PremiumScreen({super.key});
@@ -54,6 +54,32 @@ class PremiumScreen extends StatelessWidget {
             ),
             
             const SizedBox(height: 30),
+            
+            // Show warning for web users
+            if (kIsWeb)
+              Card(
+                color: Colors.orange.shade50,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.orange.shade700),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Payment is only available on mobile app. Download the APK to upgrade!',
+                          style: TextStyle(
+                            color: Colors.orange.shade900,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            
+            const SizedBox(height: 20),
             
             const Text(
               'Premium Features',
@@ -155,12 +181,33 @@ class PremiumScreen extends StatelessWidget {
                             onPressed: subscription.isProcessing
                                 ? null
                                 : () {
-                                    subscription.purchasePremium(
-                                      email: auth.user!.email!,
-                                      contact: '8248188041', // Use user's phone
-                                      amount: 99,
-                                      description: 'TaskMaster Pro - Lifetime Premium',
-                                    );
+                                    if (kIsWeb) {
+                                      // Show dialog on web
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: const Text('Mobile App Required'),
+                                          content: const Text(
+                                            'Payment is only available on the mobile app. '
+                                            'Please download the TaskMaster Pro APK to upgrade to premium.',
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(context),
+                                              child: const Text('OK'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    } else {
+                                      // Process payment on mobile
+                                      subscription.purchasePremium(
+                                        email: auth.user!.email!,
+                                        contact: '8248188041',
+                                        amount: 99,
+                                        description: 'TaskMaster Pro - Lifetime Premium',
+                                      );
+                                    }
                                   },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.amber.shade600,
@@ -180,9 +227,11 @@ class PremiumScreen extends StatelessWidget {
                                       ),
                                     ),
                                   )
-                                : const Text(
-                                    'Upgrade Now',
-                                    style: TextStyle(
+                                : Text(
+                                    kIsWeb 
+                                        ? 'Download Mobile App'
+                                        : 'Upgrade Now',
+                                    style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
@@ -196,7 +245,9 @@ class PremiumScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     
                     Text(
-                      'Secure payment powered by Razorpay',
+                      kIsWeb 
+                          ? 'Available on mobile app only'
+                          : 'Secure payment powered by Razorpay',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey.shade600,
